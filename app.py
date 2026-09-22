@@ -119,42 +119,15 @@ background = st.text_area(
 
 # 触发推演逻辑
 if st.button("启动奇门推演", use_container_width=True):
-    if not api_key:
-        st.error("服务尚未绑定秘钥，请在上方引擎配置或云端 Secrets 中填入 DEEPSEEK_API_KEY。")
-    else:
-        qimen_rules = load_qimen_rules()
-        user_prompt = (
-            f"起局时间：{calc_time}，地域：{city}，定局方法：{method}。\n"
-            f"研判诉求：{query_aim}。\n"
-            f"背景详情：{background}。\n"
-            f"输出要求：严格依据系统设定规则排定盘面，明确定位体用用神与八门格局，从客观趋势、潜在阻力、可行策略三方面提供详尽断语。"
-        )
-
-        st.markdown('<div class="report-card">', unsafe_allow_html=True)
-        st.markdown("#### 📜 奇门推演决疑报告")
-        with st.spinner("起局排盘中，正在调取九宫落局与吉凶神煞..."):
-            try:
-                client = OpenAI(
-                api_key=api_key,
-                base_url="https://api.deepseek.com"
+        if not api_key:
+            st.error("服务尚未绑定秘钥，请在上方引擎配置或云端 Secrets 中填入 DEEPSEEK_API_KEY。")
+        else:
+            qimen_rules = load_qimen_rules()
+            user_prompt = (
+                f"【起局时间】: {calc_time}，地点: {city}，起局方法: {method} \n"
+                f"【求测诉求】: {query_aim} \n"
+                f"【背景详情】: {background} \n"
+                f"【输出要求】: 严格依据系统设定的规则做出盘面，明确指出本局用神与八门落宫，涵盖现趋势、潜在阻力、可行策略三方面提供详尽建议。"
             )
-            response = client.chat.completions.create(
-                model="deepseek-chat",
-                messages=[
-                    {"role": "system", "content": qimen_rules},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.2,
-                stream=True
-            )
-            
-            def stream_gen():
-                for chunk in response:
-                    if chunk.choices and chunk.choices[0].delta.content:
-                        yield chunk.choices[0].delta.content
 
-            st.write_stream(stream_gen())
-
-         except Exception as e:
-            st.error(f"推演异常: {e}")
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('
