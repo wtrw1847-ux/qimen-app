@@ -136,7 +136,7 @@ if st.button("启动奇门推演", use_container_width=True):
             try:
                 client = genai.Client(api_key=api_key)
                 response = client.models.generate_content_stream(
-                    model=gemini-3.5-flash-lite
+                   model="gemini-3.5-flash-lite",
                     contents=user_prompt,
                     config={
                         "system_instruction": qimen_rules,
