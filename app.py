@@ -1,3 +1,4 @@
+from datetime import datetime, timezone, timedelta
 import streamlit as st
 import os
 from google import genai
@@ -103,7 +104,8 @@ def load_qimen_rules():
 # 输入表单组件
 col1, col2 = st.columns(2)
 with col1:
-    calc_time = st.text_input("起局时间 (公历)", value="2026年9月22日 18:50")
+    beijing_now = datetime.now(timezone(timedelta(hours=8))).strftime("%Y年%m月%d日 %H:%M")
+    calc_time = st.text_input("起局时间 (公历)", value=beijing_now)
     city = st.text_input("求测地域", value="北京")
 with col2:
     method = st.selectbox("排盘流派", ["拆补法", "置闰法", "茅山法"])
