@@ -133,8 +133,8 @@ if st.button("启动奇门推演", use_container_width=True):
         st.markdown('<div class="report-card">', unsafe_allow_html=True)
         st.markdown("#### 📜 奇门推演决疑报告")
         with st.spinner("起局排盘中，正在调取九宫落局与吉凶神煞..."):
-          try:
-            client = OpenAI(
+            try:
+                client = OpenAI(
                 api_key=api_key,
                 base_url="https://api.deepseek.com"
             )
@@ -155,6 +155,6 @@ if st.button("启动奇门推演", use_container_width=True):
 
             st.write_stream(stream_gen())
 
-        except Exception as e:
+         except Exception as e:
             st.error(f"推演异常: {e}")
         st.markdown('</div>', unsafe_allow_html=True)
