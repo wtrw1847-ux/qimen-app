@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 import streamlit as st
 import os
-from google import genai
+from openai import OpenAI
 
 # 页面基础配置
 st.set_page_config(
@@ -88,10 +88,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 安全获取 API Key（优先读取 Streamlit 云端 Secrets，本地测试提供折叠输入备用）
-api_key = st.secrets.get("GEMINI_API_KEY", None)
+api_key = st.secrets.get("DEEPSEEK_API_KEY", None)
 if not api_key:
     with st.expander("⚙️ 引擎配置 (本地测试用)", expanded=False):
-        api_key = st.text_input("Gemini API Key", type="password")
+       api_key = st.text_input("DeepSeek API Key", type="password")
 
 # 读取本地知识库 SKILL.md
 def load_qimen_rules():
@@ -120,7 +120,7 @@ background = st.text_area(
 # 触发推演逻辑
 if st.button("启动奇门推演", use_container_width=True):
     if not api_key:
-        st.error("服务尚未绑定秘钥，请在上方引擎配置或云端 Secrets 中填入 GEMINI_API_KEY。")
+        st.error("服务尚未绑定秘钥，请在上方引擎配置或云端 Secrets 中填入 DEEPSEEK_API_KEY。")
     else:
         qimen_rules = load_qimen_rules()
         user_prompt = (
@@ -133,17 +133,28 @@ if st.button("启动奇门推演", use_container_width=True):
         st.markdown('<div class="report-card">', unsafe_allow_html=True)
         st.markdown("#### 📜 奇门推演决疑报告")
         with st.spinner("起局排盘中，正在调取九宫落局与吉凶神煞..."):
-            try:
-                client = genai.Client(api_key=api_key)
-                response = client.models.generate_content_stream(
-                   model="gemini-3.5-flash-lite",
-                    contents=user_prompt,
-                    config={
-                        "system_instruction": qimen_rules,
-                        "temperature": 0.2
-                    }
-                )
-                st.write_stream(chunk.text for chunk in response if chunk.text)
-            except Exception as e:
-                st.error(f"推演异常：{e}")
+          try:
+            client = OpenAI(
+                api_key=api_key,
+                base_url="https://api.deepseek.com"
+            )
+            response = client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[
+                    {"role": "system", "content": qimen_rules},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.2,
+                stream=True
+            )
+            
+            def stream_gen():
+                for chunk in response:
+                    if chunk.choices and chunk.choices[0].delta.content:
+                        yield chunk.choices[0].delta.content
+
+            st.write_stream(stream_gen())
+
+        except Exception as e:
+            st.error(f"推演异常: {e}")
         st.markdown('</div>', unsafe_allow_html=True)
